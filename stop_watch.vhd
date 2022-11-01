@@ -15,63 +15,78 @@ architecture rtl of stop_watch is
 	signal count : std_logic_vector(2 downto 0);
 	signal sq1, sq2, sq3, sq4 : std_logic_vector(3 downto 0);
 begin
-	process (clk, xrst, button)
+	process (xrst)
 	begin
-		state <= s0;
 		if (xrst = '0') then
 			state <= s0;
+		end if;
+	end process;
 
-		
-		elsif (clk'event and clk = '1') then
+	process (clk, button)
+	begin
 
 		case state is
 			when s0 =>
-				count <= "000";
-				sq4 <= "0000";
-				sq3 <= "0000";
-				sq2 <= "0000";
-				sq1 <= "0000";
 				if (button = '0') then
 					state <= s1;
+				else
+					state <= state;
 				end if;
 			when s1 =>
 				if (button = '0') then
 					state <= s2;
 				else
-				
-					count <= count + 1;
-					if (count = "111") then
-						sq1 <= sq1 + 1;
-					end if;
-					if (sq1 = "1001") then
-						sq2 <= sq2 + 1;
-					end if;
-					if (sq2 = "1001") then
-						sq3 <= sq3 + 1;
-					end if;
-					if (sq3 = "1001") then
-						sq4 <= sq4 + 1;
-					end if;
+					state <= state;
 				end if;
-
 			when s2 =>
 				if (button = '0') then
 					state <= s1;
+				else
+					state <= state;
 				end if;
-
 			when others =>
 				state <= state;
 		end case;
-		end if;
-
 	end process;
-	
-	process(state)
+
+	process (clk)
 	begin
-	q4 <= sq4;
-	q3 <= sq3;
-	q2 <= sq2;
-	q1 <= sq1;
+		if (state = s0) then
+			count <= "000";
+			sq4 <= "0000";
+			sq3 <= "0000";
+			sq2 <= "0000";
+			sq1 <= "0000";
+		elsif (state = s1) then
+			if (clk'event and clk = '1') then
+				count <= count + 1;
+				if (count = "111") then
+					sq1 <= sq1 + 1;
+					count <= "000";
+				end if;
+				if (sq1 = "1010") then
+					sq2 <= sq2 + 1;
+					sq1 <= "0000";
+				end if;
+				if (sq2 = "1010") then
+					sq3 <= sq3 + 1;
+					sq2 <= "0000";
+				end if;
+				if (sq3 = "1010") then
+					sq4 <= sq4 + 1;
+					sq3 <= "0000";
+				end if;
+
+			end if;
+		end if;
+	end process;
+
+	process (clk)
+	begin
+		q4 <= sq4;
+		q3 <= sq3;
+		q2 <= sq2;
+		q1 <= sq1;
 	end process;
 
 end rtl;
