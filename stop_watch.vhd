@@ -20,7 +20,9 @@ begin
 		state <= s0;
 		if (xrst = '0') then
 			state <= s0;
-		end if;
+
+		
+		elsif (clk'event and clk = '1') then
 
 		case state is
 			when s0 =>
@@ -29,14 +31,14 @@ begin
 				sq3 <= "0000";
 				sq2 <= "0000";
 				sq1 <= "0000";
-				if (button'event and button = '1') then
+				if (button = '0') then
 					state <= s1;
 				end if;
 			when s1 =>
-				if (button'event and button = '0') then
+				if (button = '0') then
 					state <= s2;
-				end if;
-				if (clk'event and clk = '1') then
+				else
+				
 					count <= count + 1;
 					if (count = "111") then
 						sq1 <= sq1 + 1;
@@ -53,18 +55,23 @@ begin
 				end if;
 
 			when s2 =>
-				if (button'event and button = '1') then
+				if (button = '0') then
 					state <= s1;
 				end if;
 
 			when others =>
 				state <= state;
 		end case;
+		end if;
 
 	end process;
+	
+	process(state)
+	begin
 	q4 <= sq4;
 	q3 <= sq3;
 	q2 <= sq2;
 	q1 <= sq1;
+	end process;
 
 end rtl;
