@@ -15,15 +15,12 @@ architecture rtl of stop_watch is
 	signal count : std_logic_vector(2 downto 0);
 	signal sq1, sq2, sq3, sq4 : std_logic_vector(3 downto 0);
 begin
-	process (xrst)
+	state <= s0;
+	process (xrst, clk, button)
 	begin
 		if (xrst = '0') then
 			state <= s0;
 		end if;
-	end process;
-
-	process (clk, button)
-	begin
 
 		case state is
 			when s0 =>
@@ -79,10 +76,7 @@ begin
 
 			end if;
 		end if;
-	end process;
 
-	process (clk)
-	begin
 		q4 <= sq4;
 		q3 <= sq3;
 		q2 <= sq2;
