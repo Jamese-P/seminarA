@@ -24,7 +24,7 @@ begin
 
 		case state is
 			when s0 =>
-				if (button = '0') then
+				if ( button = '0') then
 					state <= s1;
 				else
 					state <= state;
@@ -82,6 +82,9 @@ begin
 						end if;
 					end if;
 				end if;
+end if;
+end if;
+end if;
 
 			end if;
 		end if;
