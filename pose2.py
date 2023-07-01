@@ -31,9 +31,13 @@ with mp_pose.Pose(
       print("Ignoring empty camera frame.")
       continue
     image.flags.writeable = False
+
+    out.write(image)
+
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     results = pose.process(image)
 
+ 
     if (time.time()-time_pre)>5:
       rec1=(random.randint(1,width-100),random.randint(1,height-100))
       rec2=(rec1[0]+100,rec1[1]+100)
@@ -54,7 +58,8 @@ with mp_pose.Pose(
     y_right=results.pose_landmarks.landmark[20].y*height
     #print(width,height,x_left,y_left,x_right,y_right)
     image.flags.writeable = True
-    out.write(image)
+    
+    
     # 検出されたポーズの骨格をカメラ画像に重ねて描画
     image.flags.writeable = True
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
