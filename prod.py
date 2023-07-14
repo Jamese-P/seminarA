@@ -164,8 +164,6 @@ def reflect(angle,fore_img, image, dx,dy):
 
       return angle
 
-#TODO 削除
-
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--video_path', type=str, default='', help='Path to the video file.')
 args = parser.parse_args()
@@ -190,7 +188,6 @@ previous_hand_time = 0
 now_hand_time = 0
 dist = 0
 reflect_flag = True
-#TODO 削除
 count = 0
 nowtime = 0
 pasttime = 0
@@ -259,9 +256,6 @@ with mp_pose.Pose(
           pose_results.pose_landmarks,
           mp_pose.POSE_CONNECTIONS,
           landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-
-      #TODO 削除
-
 
       if(obj_touched):
         if(obj_touch_now and reflect_flag and now_hand_time - change_time >0.5):
