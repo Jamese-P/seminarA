@@ -90,7 +90,6 @@ def move_obj(fore_image,x,y,v):
 
    #elif(hands == 'paa'):
      # None
-   
 
 def touch_judge(hand_x,hand_y,dx,dy,fore_img,image):
       h, w = fore_img.shape[:2]
@@ -151,12 +150,10 @@ def reflect(angle,fore_img, image, dx,dy):
       if back_x_min < 0 or back_x_max > back_w:
           angle=180-angle
           reflect_flag = True
-          obj_vec=obj_vec+10
 
       if back_y_min < 0 or back_y_max > back_h:
           angle=-1*angle
           reflect_flag = True
-          obj_vec=obj_vec+10
 
       return angle
 
@@ -171,11 +168,17 @@ else:
 width=cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 height=cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
+#ボールの初期位置
 px=random.randint(1,width-100)
 py=random.randint(1,height-100)
 
+#フラグ
+game_finish_flag=False
 obj_touched = False
 obj_touch_now = False
+bomb_flag = False
+bomb_first_flag = True
+
 hand_velocity = 0
 obj_vec=300
 previous_hands_pos = [0,0]
@@ -188,16 +191,15 @@ count = 0
 nowtime = 0
 pasttime = 0
 change_time = 0
-bomb_flag = False
-#TODO
-game_flag=0
+
+
 fore_img = cv2.imread(r"data/ball.png")
 fore_img = cv2.resize(fore_img, (100, 100))
 bomb_img = cv2.imread(r"data/bomb.png")
 bomb_img = cv2.resize(bomb_img, (100, 100))
 start_time = time.perf_counter()
 previous_hand_time = start_time
-bomb_first_flag = True
+
 with mp_pose.Pose(
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5) as pose:
@@ -254,34 +256,43 @@ with mp_pose.Pose(
           landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
       if(obj_touched):
-        if(obj_touch_now and reflect_flag and now_hand_time - change_time >0.5):
+        angle = reflect(angle,fore_img, image, int(px),int(py))
+        if(reflect_flag and (not game_finish_flag) and (not bomb_flag)):
+            obj_vec=obj_vec+10
+            reflect_flag=False
+        if(obj_touch_now and now_hand_time - change_time >0.5):
           if(identify_hand(hands_results.multi_hand_landmarks[0].landmark)==1):
-             bomb_flag = True
+            bomb_flag = True
           change_time = now_hand_time
-          reflect_flag = False
+          #reflect_flag = False
           dist = distance.euclidean(previous_hands_pos, now_hands_pos)
           hand_velocity = dist/duration
-          #obj_vec = hand_velocity/2
           # ラジアン単位を取得
           radian = -1*math.atan2(previous_hands_pos[1] - now_hands_pos[1], now_hands_pos[0] - previous_hands_pos[0] )
           # ラジアン単位から角度を取得
           angle = radian * (180 / math.pi)
           #print(hand_velocity)
-        #x,y = move_img()
+
         #画像の位置変更
-        angle = reflect(angle,fore_img, image, int(px),int(py))
         vx = obj_vec*math.cos(angle*math.pi/180.0)
         vy = obj_vec*math.sin(angle*math.pi/180.0)
         px = px+vx*(nowtime - pasttime)
         py = py+vy*(nowtime - pasttime)
-        
-      #TODO ゲームオーバー
-      if(pose_results.pose_landmarks):
-        if(in_rect(image,pose_results.pose_landmarks.landmark,(px,py))):
-           print("GAME OVER")
-           game_flag=1
 
-      if(bomb_flag):
+        #TODO ゲームオーバー
+        if(pose_results.pose_landmarks):
+          if(in_rect(image,pose_results.pose_landmarks.landmark,(px,py))):
+            print("GAME OVER")
+            game_finish_flag=True
+            obj_touched=False
+            obj_touch_now=False
+            bomb_first_flag=True
+            bomb_flag=False
+        
+      if(game_finish_flag):
+        image = cv2.flip(image, 1)
+        cv2.putText(image,"GAME OVER",(100,300),cv2.FONT_HERSHEY_SIMPLEX,5.0,color=(0, 0, 255),thickness=2,lineType=cv2.LINE_4)
+      elif(bomb_flag):
         if(bomb_first_flag):
            bomb_first_flag = False
            bom_x = int(px)
@@ -293,12 +304,9 @@ with mp_pose.Pose(
       else:
         image = comp(fore_img,image,int(px),int(py))
         image = cv2.flip(image, 1)
-        cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
+      
+      cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
         
-      #TODO
-      if(game_flag):
-        cv2.putText(image,"GAME OVER",(100,300),cv2.FONT_HERSHEY_SIMPLEX,5.0,color=(0, 0, 255),thickness=2,lineType=cv2.LINE_4)
-
       obj_touch_now = False
       cv2.imshow('MediaPipe Pose', image)
       if(nowtime -start_time > 200.0):
@@ -313,6 +321,6 @@ with mp_pose.Pose(
         obj_vec=200
         px=random.randint(1,width-100)
         py=random.randint(1,height-100)
-
+        game_finish_flag=False
          
 cap.release()
