@@ -33,8 +33,6 @@ def identify_hand(landmark):
     if (abs(coef[0][1])>0.9):
       straight_finger+=1
 
-  #print(straight_finger)
-
   if straight_finger==5:
     print("paa")
     return 1
@@ -115,8 +113,6 @@ def in_rect(image,pose_landmark,target):
     c = (pose_landmark[24].x*w, pose_landmark[24].y*h)
     d = (pose_landmark[23].x*w, pose_landmark[23].y*h)
     e = (target[0], target[1])
-
-
 
     # 原点から点へのベクトルを求める
     vector_a = np.array(a)
@@ -299,9 +295,9 @@ with mp_pose.Pose(
         image = cv2.flip(image, 1)
         cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
         
-        #TODO
-        if(game_flag):
-         cv2.putText(image,"GAME OVER",(100,300),cv2.FONT_HERSHEY_SIMPLEX,5.0,color=(0, 0, 255),thickness=2,lineType=cv2.LINE_4)
+      #TODO
+      if(game_flag):
+        cv2.putText(image,"GAME OVER",(100,300),cv2.FONT_HERSHEY_SIMPLEX,5.0,color=(0, 0, 255),thickness=2,lineType=cv2.LINE_4)
 
       obj_touch_now = False
       cv2.imshow('MediaPipe Pose', image)
