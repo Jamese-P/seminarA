@@ -141,8 +141,6 @@ def in_rect(image,pose_landmark,target):
     vector_cross_cd_ce = np.cross(vector_cd, vector_ce)
     vector_cross_da_de = np.cross(vector_da, vector_de)
     result=(vector_cross_ab_ae < 0 and vector_cross_bc_be < 0 and vector_cross_cd_ce < 0 and vector_cross_da_de < 0)
-    if result:
-      print(result)
     return result
       
 def reflect(angle,fore_img, image, dx,dy):
@@ -166,10 +164,7 @@ def reflect(angle,fore_img, image, dx,dy):
 
       return angle
 
-def show_goal(image,goal1,goal2):
-   h, w = image.shape[:2]
-   cv2.line(image,(10,int(goal1)),(10,int(goal1+150)),color=(0, 255, 0),thickness=3,lineType=cv2.LINE_4,shift=0)
-   cv2.line(image,(w-10,int(goal2)),(w-10, int(goal2+150)),color=(0, 255, 0),thickness=3,lineType=cv2.LINE_4,shift=0)
+#TODO 削除
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-v', '--video_path', type=str, default='', help='Path to the video file.')
@@ -188,22 +183,21 @@ py=random.randint(1,height-100)
 obj_touched = False
 obj_touch_now = False
 hand_velocity = 0
-obj_vec=100
+obj_vec=300
 previous_hands_pos = [0,0]
 now_hands_pos = [0,0] 
 previous_hand_time = 0
 now_hand_time = 0
 dist = 0
 reflect_flag = True
-goal1=random.randint(1,height-100)
-goal2=random.randint(1,height-100)
-flag_goal1=1
-flag_goal2=-1
+#TODO 削除
 count = 0
 nowtime = 0
 pasttime = 0
 change_time = 0
 bomb_flag = False
+#TODO
+game_flag=0
 fore_img = cv2.imread(r"data/ball.png")
 fore_img = cv2.resize(fore_img, (100, 100))
 bomb_img = cv2.imread(r"data/bomb.png")
@@ -266,22 +260,8 @@ with mp_pose.Pose(
           mp_pose.POSE_CONNECTIONS,
           landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
-      show_goal(image,goal1,goal2)
+      #TODO 削除
 
-      if(flag_goal1==-1):
-         goal1=goal1-10
-      else:
-         goal1=goal1+10
-
-      if(flag_goal2==-1):
-         goal2=goal2-10
-      else:
-         goal2=goal2+10
-
-      if(goal1>height-150 or goal1<0):
-        flag_goal1=flag_goal1*(-1)
-      if(goal2>height-150 or goal2<0):
-        flag_goal2=flag_goal2*(-1)
 
       if(obj_touched):
         if(obj_touch_now and reflect_flag and now_hand_time - change_time >0.5):
@@ -304,9 +284,12 @@ with mp_pose.Pose(
         vy = obj_vec*math.sin(angle*math.pi/180.0)
         px = px+vx*(nowtime - pasttime)
         py = py+vy*(nowtime - pasttime)
+        
+      #TODO ゲームオーバー
       if(pose_results.pose_landmarks):
-        in_rect(image,pose_results.pose_landmarks.landmark,(px,py))
-      
+        if(in_rect(image,pose_results.pose_landmarks.landmark,(px,py))):
+           print("GAME OVER")
+           game_flag=1
 
       if(bomb_flag):
         if(bomb_first_flag):
@@ -320,10 +303,11 @@ with mp_pose.Pose(
       else:
         image = comp(fore_img,image,int(px),int(py))
         image = cv2.flip(image, 1)
-        cv2.putText(image,'ball',(int(width-px),int(py)),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
-
-        #TODO 得点　ボールの速度の表示
         cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
+        
+        #TODO
+        if(game_flag):
+         cv2.putText(image,"GAME OVER",(100,300),cv2.FONT_HERSHEY_SIMPLEX,5.0,color=(0, 0, 255),thickness=2,lineType=cv2.LINE_4)
 
       obj_touch_now = False
       cv2.imshow('MediaPipe Pose', image)
@@ -333,4 +317,12 @@ with mp_pose.Pose(
          break
       if cv2.waitKey(5) & 0xFF == 27:
         break
+
+      #TODO リセットボタン
+      if cv2.waitKey(5) & 0xFF == 114:
+        obj_vec=200
+        px=random.randint(1,width-100)
+        py=random.randint(1,height-100)
+
+         
 cap.release()
