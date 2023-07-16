@@ -18,9 +18,11 @@ angle = 0
 def identify_hand(landmark):
   landmark_x=list()
   landmark_y=list()
+  landmark_z=list()
   for i in range(21):
     landmark_x.append(landmark[i].x)
     landmark_y.append(landmark[i].y)
+    landmark_z.append(landmark[i].z)
   
   fingers=list() #親指、人差し指、中指、薬指、小指
   straight_finger=0
@@ -34,11 +36,30 @@ def identify_hand(landmark):
       straight_finger+=1
 
   if straight_finger==5:
-    print("paa")
-    return 1
+    for i in range(5):
+       finger_root=distance.euclidean((landmark_x[0],landmark_x[4*(i+1)]),(landmark_y[0],landmark_y[4*(i+1)]))
+       finger_tip=distance.euclidean((landmark_x[0],landmark_x[4*i+1]),(landmark_y[0],landmark_y[4*i+1]))
+       if(finger_tip<finger_root):
+          straight_finger-=1
+    if(straight_finger==5):
+      print("paa")
+      return 1
+    else:
+      print("guu2")
+      return 2
   elif straight_finger==1 or straight_finger==0:
-    print("guu")
-    return 2
+    abs_z=0
+    for i in range(5):
+       #print(abs(landmark_z[0]-landmark_z[4*(i+1)]))
+       if(abs(landmark_z[0]-landmark_z[4*(i+1)])>0.1):
+          abs_z+=1
+    
+    if(abs_z>3):
+       print("paa2")
+       return 1
+    else:
+      print("guu")
+      return 2
   
   return -1
 
@@ -236,6 +257,11 @@ with mp_pose.Pose(
         duration = now_hand_time - previous_hand_time
 
         for hand_landmarks in hands_results.multi_hand_landmarks:
+          hand=identify_hand(hand_landmarks.landmark)
+          if(hand==1):
+              cv2.putText(image,"paa",(int(hand_landmarks.landmark[0].x),int(hand_landmarks.landmark[0].y)),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
+          elif(hand==2):
+              cv2.putText(image,"guu",(int(hand_landmarks.landmark[0].x),int(hand_landmarks.landmark[0].y)),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
           for hand_landmark in hand_landmarks.landmark:
             if(touch_judge(hand_landmark.x*weight,hand_landmark.y*height,int(px),int(py),fore_img,image)):
               obj_touched = True
@@ -294,10 +320,10 @@ with mp_pose.Pose(
         cv2.putText(image,"GAME OVER",(100,300),cv2.FONT_HERSHEY_SIMPLEX,5.0,color=(0, 0, 255),thickness=2,lineType=cv2.LINE_4)
       elif(bomb_flag):
         if(bomb_first_flag):
-           bomb_first_flag = False
-           bom_x = int(px)
-           bom_y = int(py)
-           bom_start_time = time.perf_counter()
+          bomb_first_flag = False
+          bom_x = int(px)
+          bom_y = int(py)
+          bom_start_time = time.perf_counter()
         if(time.perf_counter()-bom_start_time <2.0):
           image = comp(bomb_img,image,bom_x,bom_y)
         image = cv2.flip(image, 1)
