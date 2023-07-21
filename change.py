@@ -37,11 +37,11 @@ def identify_hand(landmark):
 
   if straight_finger==5:
     for i in range(5):
-       finger_tip=distance.euclidean((landmark_x[0],landmark_x[4*(i+1)]),(landmark_y[0],landmark_y[4*(i+1)]))
-       finger_root=distance.euclidean((landmark_x[0],landmark_x[4*i+1]),(landmark_y[0],landmark_y[4*i+1]))
+       finger_root=distance.euclidean((landmark_x[0],landmark_y[0]),(landmark_x[4*i+1],landmark_y[4*i+1]))
+       finger_tip=distance.euclidean((landmark_x[0],landmark_y[0]),(landmark_x[4*(i+1)],landmark_y[4*(i+1)]))
        if(finger_tip<finger_root):
           straight_finger-=1
-    if(straight_finger>3):
+    if(straight_finger==5):
       print("paa")
       return 1
     else:
@@ -258,6 +258,10 @@ with mp_pose.Pose(
 
         for hand_landmarks in hands_results.multi_hand_landmarks:
           hand=identify_hand(hand_landmarks.landmark)
+          if(hand==1):
+              cv2.putText(image,"paa",(int(hand_landmarks.landmark[0].x),int(hand_landmarks.landmark[0].y)),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
+          elif(hand==2):
+              cv2.putText(image,"guu",(int(hand_landmarks.landmark[0].x),int(hand_landmarks.landmark[0].y)),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
           for hand_landmark in hand_landmarks.landmark:
             if(touch_judge(hand_landmark.x*weight,hand_landmark.y*height,int(px),int(py),fore_img,image)):
               obj_touched = True
