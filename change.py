@@ -257,11 +257,7 @@ with mp_pose.Pose(
         duration = now_hand_time - previous_hand_time
 
         for hand_landmarks in hands_results.multi_hand_landmarks:
-          hand=identify_hand(hand_landmarks.landmark)
-          if(hand==1):
-              cv2.putText(image,"paa",(int(hand_landmarks.landmark[0].x),int(hand_landmarks.landmark[0].y)),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
-          elif(hand==2):
-              cv2.putText(image,"guu",(int(hand_landmarks.landmark[0].x),int(hand_landmarks.landmark[0].y)),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
+          #hand=identify_hand(hand_landmarks.landmark)
           for hand_landmark in hand_landmarks.landmark:
             if(touch_judge(hand_landmark.x*weight,hand_landmark.y*height,int(px),int(py),fore_img,image)):
               obj_touched = True
@@ -284,11 +280,13 @@ with mp_pose.Pose(
       if(obj_touched):
         angle = reflect(angle,fore_img, image, int(px),int(py))
         if(reflect_flag and (not game_finish_flag) and (not bomb_flag)):
-            obj_vec=obj_vec+10
+            obj_vec=obj_vec+50
             reflect_flag=False
         if(obj_touch_now and now_hand_time - change_time >0.5):
           if(identify_hand(hands_results.multi_hand_landmarks[0].landmark)==1):
             bomb_flag = True
+            obj_touched=False
+            obj_touch_now=False
           change_time = now_hand_time
           #reflect_flag = False
           dist = distance.euclidean(previous_hands_pos, now_hands_pos)
@@ -327,11 +325,15 @@ with mp_pose.Pose(
         if(time.perf_counter()-bom_start_time <2.0):
           image = comp(bomb_img,image,bom_x,bom_y)
         image = cv2.flip(image, 1)
+        #スコアの表示
+        cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
       else:
         image = comp(fore_img,image,int(px),int(py))
         image = cv2.flip(image, 1)
+        #スコアの表示
+        cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
       
-      cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
+      
         
       obj_touch_now = False
       cv2.imshow('MediaPipe Pose', image)
@@ -348,5 +350,9 @@ with mp_pose.Pose(
         px=random.randint(1,width-100)
         py=random.randint(1,height-100)
         game_finish_flag=False
+        obj_touched=False
+        obj_touch_now=False
+        bomb_first_flag=True
+        bomb_flag=False
          
 cap.release()
