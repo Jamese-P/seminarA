@@ -263,22 +263,17 @@ with mp_pose.Pose(
               obj_touched = True
               obj_touch_now = True
         
-        for hand_landmarks in hands_results.multi_hand_landmarks:
-          mp_drawing.draw_landmarks(
-              image,
-              hand_landmarks,
-              mp_hands.HAND_CONNECTIONS,
-              mp_drawing_styles.get_default_hand_landmarks_style(),
-              mp_drawing_styles.get_default_hand_connections_style())
-        
-      mp_drawing.draw_landmarks(
-          image,
-          pose_results.pose_landmarks,
-          mp_pose.POSE_CONNECTIONS,
-          landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
       if(obj_touched):
         angle = reflect(angle,fore_img, image, int(px),int(py))
+        if(px<0):
+           px = 0
+        if(px > width):
+           px = width
+        if(py<0):
+           py = 0
+        if(py > height):
+           py = height        
         if(reflect_flag and (not game_finish_flag) and (not bomb_flag)):
             obj_vec=obj_vec+50
             reflect_flag=False
@@ -315,7 +310,19 @@ with mp_pose.Pose(
         
       if(game_finish_flag):
         image = cv2.flip(image, 1)
-        cv2.putText(image,"GAME OVER",(100,300),cv2.FONT_HERSHEY_SIMPLEX,5.0,color=(0, 0, 255),thickness=2,lineType=cv2.LINE_4)
+        text = "GAME OVER"
+        face = cv2.FONT_HERSHEY_SIMPLEX
+        height = 100
+        thickness = 3
+        while(True):
+          scale = cv2.getFontScaleFromHeight(face, int(height), thickness)
+          size, baseline = cv2.getTextSize(text, face, scale, thickness)
+          if(size[0]>width-100):
+             height = height * 0.9
+          else :
+             break
+
+        cv2.putText(image,text,(50,100),cv2.FONT_HERSHEY_SIMPLEX,scale,color=(0, 0, 255),thickness=2,lineType=cv2.LINE_4)
       elif(bomb_flag):
         if(bomb_first_flag):
           bomb_first_flag = False
@@ -326,12 +333,24 @@ with mp_pose.Pose(
           image = comp(bomb_img,image,bom_x,bom_y)
         image = cv2.flip(image, 1)
         #スコアの表示
-        cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
+        text = "score is " + str(obj_vec-300)
+        face = cv2.FONT_HERSHEY_SIMPLEX
+        height = 100
+        thickness = 3
+        while(True):
+          scale = cv2.getFontScaleFromHeight(face, int(height), thickness)
+          size, baseline = cv2.getTextSize(text, face, scale, thickness)
+          if(size[0]>width-100):
+             height = height * 0.9
+          else :
+             break
+
+        cv2.putText(image,text,(50,100),cv2.FONT_HERSHEY_SIMPLEX,scale,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
       else:
         image = comp(fore_img,image,int(px),int(py))
         image = cv2.flip(image, 1)
         #スコアの表示
-        cv2.putText(image,str(obj_vec),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
+        cv2.putText(image,str(obj_vec-300),(100,100),cv2.FONT_HERSHEY_SIMPLEX,1.0,color=(0, 255, 0),thickness=2,lineType=cv2.LINE_4)
       
       
         
