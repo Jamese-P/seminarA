@@ -275,7 +275,7 @@ with mp_pose.Pose(
         if(py > height):
            py = height        
         if(reflect_flag and (not game_finish_flag) and (not bomb_flag)):
-            obj_vec=obj_vec+50
+            obj_vec=obj_vec+30
             reflect_flag=False
         if(obj_touch_now and now_hand_time - change_time >0.5):
           if(identify_hand(hands_results.multi_hand_landmarks[0].landmark)==1):
